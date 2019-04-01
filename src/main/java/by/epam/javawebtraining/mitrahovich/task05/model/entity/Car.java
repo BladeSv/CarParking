@@ -1,5 +1,6 @@
 package by.epam.javawebtraining.mitrahovich.task05.model.entity;
 
+import java.util.Random;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.log4j.Logger;
@@ -10,14 +11,17 @@ public class Car implements Runnable {
 	private long stay;
 	private long wait;
 	private CarParking carParking;
+	private static Random rd;
 
 	private static Logger log;
 
 	static {
 		log = Logger.getRootLogger();
+		rd = new Random();
 	}
 
 	public Car(String name, CarParking carParking, long wait, long stay) {
+		log.trace("create car" + name);
 		thread = new Thread(this);
 		thread.start();
 		this.name = name;
@@ -25,7 +29,6 @@ public class Car implements Runnable {
 		this.wait = wait;
 		this.stay = stay;
 
-		log.trace("create car" + name);
 	}
 
 	public String getName() {
@@ -48,24 +51,30 @@ public class Car implements Runnable {
 		log.trace("car " + name + " stay in queue");
 		try {
 			if (carParking.getDriveIntoLock().tryLock(stay, TimeUnit.MILLISECONDS)) {
+				log.trace("car " + name + " start parking");
 				carParking.driveInto(this);
-				log.trace("car " + name + " has parking");
-				carParking.getDriveIntoLock().unlock();
+
+				log.trace("car" + name + " wait into parking place waiting " + wait + "mSec");
+				try {
+					TimeUnit.MILLISECONDS.sleep(wait);
+
+				} catch (InterruptedException e) {
+					log.trace("car " + name + "cant sleep" + e.getStackTrace());
+					e.printStackTrace();
+				}
+				while (!carParking.getDriveOutLock().tryLock()) {
+
+				}
+				carParking.driveOut(this);
+				log.trace("car " + name + " leave car parking");
+
+			} else {
+
+				log.trace("car " + name + "leave queue");
 			}
 		} catch (InterruptedException e) {
 			log.trace("car " + name + " cant parking" + e.getStackTrace());
 
-		}
-		log.trace("car wait into parking place" + wait + "mSec");
-		try {
-			thread.sleep(wait);
-		} catch (InterruptedException e) {
-			log.trace("car " + name + "cant sleep" + e.getStackTrace());
-			e.printStackTrace();
-		}
-		if (carParking.getDriveOutLock().tryLock()) {
-			carParking.driveOut(this);
-			log.trace("car " + name + "leave car parking");
 		}
 
 	}

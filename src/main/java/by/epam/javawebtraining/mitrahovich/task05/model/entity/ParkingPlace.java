@@ -57,9 +57,10 @@ public class ParkingPlace {
 		parkingPlaceLock.lock();
 		boolean check = false;
 		if (!isEmpty()) {
+			log.trace("car " + car + " leave parking place number " + numberPlace);
 			car = null;
 			check = true;
-			log.trace("car " + car + " leave parking place number " + numberPlace);
+
 		}
 		parkingPlaceLock.unlock();
 		return check;

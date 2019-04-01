@@ -9,8 +9,15 @@ public class MainApp {
 	}
 
 	public static void main(String[] args) {
-		Controller controller = new Controller();
-		controller.run();
+
+		try {
+			Controller controller = new Controller();
+			controller.run();
+			Thread.currentThread().join();
+		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 
 	}
 

@@ -31,7 +31,8 @@ public class CarParking {
 		driveIntoLock = new ReentrantLock();
 		driveOutLock = new ReentrantLock();
 		carParkingSize = Integer.parseInt(PropertiesManager.getCarParkingSize());
-		numberFreeplace.set(carParkingSize);
+
+		numberFreeplace = new AtomicInteger(carParkingSize);
 
 		places = new ArrayList<ParkingPlace>(carParkingSize);
 		for (int i = 1; i <= carParkingSize; i++) {
@@ -63,12 +64,12 @@ public class CarParking {
 				check = temp.park(car);
 				if (check) {
 					numberFreeplace.getAndIncrement();
+					log.trace("car-" + car + " stay into car parking");
 
 				}
 
 			}
 
-			log.trace("car-" + car + " drive into car parking");
 		}
 
 		driveIntoLock.unlock();

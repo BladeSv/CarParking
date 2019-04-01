@@ -17,4 +17,12 @@ public class PropertiesManager {
 	public static String getCarParkingSize() {
 		return rb.getString("size");
 	}
+
+	public static String getCarWaitTime() {
+		return rb.getString("car.time.wait");
+	}
+
+	public static String getCarStayTime() {
+		return rb.getString("car.time.stay");
+	}
 }
