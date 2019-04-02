@@ -16,7 +16,8 @@ public class Controller {
 	public void run() {
 		CarParking carParking = new CarParking();
 		for (int i = 1; i < 4; i++) {
-			new Car("Super car" + i, carParking, rd.nextInt(Integer.parseInt(PropertiesManager.getCarWaitTime())), rd.nextInt(Integer.parseInt(PropertiesManager.getCarStayTime())));
+			new Car("Super car" + i, carParking, rd.nextInt(Integer.parseInt(PropertiesManager.getCarWaitTime())), 100000L);
+//		new Car("Super car" + i, carParking, rd.nextInt(Integer.parseInt(PropertiesManager.getCarWaitTime())), rd.nextInt(Integer.parseInt(PropertiesManager.getCarStayTime())));
 
 		}
 

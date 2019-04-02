@@ -1,6 +1,5 @@
 package by.epam.javawebtraining.mitrahovich.task05.model.entity;
 
-import java.util.Random;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.log4j.Logger;
@@ -11,17 +10,16 @@ public class Car implements Runnable {
 	private long stay;
 	private long wait;
 	private CarParking carParking;
-	private static Random rd;
 
 	private static Logger log;
 
 	static {
 		log = Logger.getRootLogger();
-		rd = new Random();
+
 	}
 
 	public Car(String name, CarParking carParking, long wait, long stay) {
-		log.trace("create car" + name);
+		log.trace("create car" + name + " wait time-" + wait + " stay time-" + stay);
 		thread = new Thread(this);
 		thread.start();
 		this.name = name;
@@ -50,27 +48,28 @@ public class Car implements Runnable {
 	public void run() {
 		log.trace("car " + name + " stay in queue");
 		try {
-			if (carParking.getDriveIntoLock().tryLock(stay, TimeUnit.MILLISECONDS)) {
+			boolean cheak = carParking.getDriveIntoLock().tryLock(stay, TimeUnit.MILLISECONDS);
+			log.trace("car " + name + " trylock into LOCK car parking -result-" + cheak);
+			if (cheak) {
 				log.trace("car " + name + " start parking");
 				carParking.driveInto(this);
 
-				log.trace("car" + name + " wait into parking place waiting " + wait + "mSec");
-				try {
-					TimeUnit.MILLISECONDS.sleep(wait);
-
-				} catch (InterruptedException e) {
-					log.trace("car " + name + "cant sleep" + e.getStackTrace());
-					e.printStackTrace();
-				}
-				while (!carParking.getDriveOutLock().tryLock()) {
-
-				}
-				carParking.driveOut(this);
-				log.trace("car " + name + " leave car parking");
+				/*
+				 * log.trace("car" + name + " wait into parking place waiting " + wait +
+				 * "mSec"); try { TimeUnit.MILLISECONDS.sleep(wait);
+				 * 
+				 * } catch (InterruptedException e) { log.trace("car " + name + "cant sleep" +
+				 * e.getStackTrace()); e.printStackTrace(); }
+				 */
+//				if (!carParking.getDriveOutLock().tryLock()) {
+//
+//					carParking.driveOut(this);
+//					log.trace("car " + name + " leave car parking");
+//				}
 
 			} else {
 
-				log.trace("car " + name + "leave queue");
+				log.trace("car " + name + " leave queue");
 			}
 		} catch (InterruptedException e) {
 			log.trace("car " + name + " cant parking" + e.getStackTrace());

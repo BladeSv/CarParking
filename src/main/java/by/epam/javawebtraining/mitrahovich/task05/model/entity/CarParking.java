@@ -54,44 +54,54 @@ public class CarParking {
 		return driveOutLock;
 	}
 
-	public boolean driveInto(Car car) {
+	public void driveInto(Car car) {
+		log.trace("driveIntoLock-LOCK");
 		driveIntoLock.lock();
-		boolean check = false;
 
 		if (isFreePlace()) {
 			ParkingPlace temp = findFreeParkingPlace();
+			log.trace("find free car place N-" + temp.getNumberPlace() + " for car-" + car);
 			if (temp.getParkingPlaceLock().tryLock()) {
-				check = temp.park(car);
-				if (check) {
-					numberFreeplace.getAndIncrement();
-					log.trace("car-" + car + " stay into car parking");
+				temp.park(car);
 
+				numberFreeplace.getAndDecrement();
+				if (numberFreeplace.get() != 0) {
+					log.trace("driveIntoLock-UNLOCK");
+					driveIntoLock.unlock();
+
+				} else if (numberFreeplace.get() < carParkingSize) {
+					log.trace("driveOutLock-UNLOCK");
+					driveIntoLock.unlock();
 				}
+				log.trace("car-" + car + " stay into car parking");
 
 			}
 
 		}
 
-		driveIntoLock.unlock();
-		return check;
 	}
 
-	public boolean driveOut(Car car) {
+	public void driveOut(Car car) {
+		log.trace("driveOutLock-LOCK");
 		driveOutLock.lock();
-		boolean check = false;
 
 		ParkingPlace temp = findCarParkingPlace(car);
 		if (temp != null && temp.getParkingPlaceLock().tryLock()) {
-			check = temp.leave();
-			if (check) {
-				numberFreeplace.getAndDecrement();
-				log.trace("car-" + car + " drive out car parking");
+			temp.leave();
+
+			numberFreeplace.getAndIncrement();
+			if (numberFreeplace.get() != carParkingSize) {
+				log.trace("driveOutLock-UNLOCK");
+				driveOutLock.unlock();
+
+			} else if (numberFreeplace.get() > 0) {
+				log.trace("driveIntoLock-UNLOCK");
+				driveIntoLock.unlock();
+
 			}
+			log.trace("car-" + car + " drive out car parking");
 
 		}
-
-		driveOutLock.unlock();
-		return check;
 
 	}
 

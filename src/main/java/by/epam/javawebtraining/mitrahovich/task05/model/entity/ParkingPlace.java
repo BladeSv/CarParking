@@ -40,30 +40,32 @@ public class ParkingPlace {
 		return parkingPlaceLock;
 	}
 
-	public boolean park(Car car) {
+	public void park(Car car) {
+		log.trace("park parking place " + numberPlace + " LOCK car " + car);
 		parkingPlaceLock.lock();
-		boolean check = false;
+
 		if (isEmpty()) {
 
 			this.car = car;
 			log.trace("car " + car + " park into parking place number " + numberPlace);
-			check = true;
+
 		}
+		log.trace("park parking place " + numberPlace + " UNLOCK car " + car);
 		parkingPlaceLock.unlock();
-		return check;
+
 	}
 
-	public boolean leave() {
+	public void leave() {
+		log.trace("leave parking place " + numberPlace + " UNLOCK car " + car);
 		parkingPlaceLock.lock();
-		boolean check = false;
+
 		if (!isEmpty()) {
 			log.trace("car " + car + " leave parking place number " + numberPlace);
 			car = null;
-			check = true;
 
 		}
+		log.trace("leave parking place " + numberPlace + " UNLOCK car " + car);
 		parkingPlaceLock.unlock();
-		return check;
 
 	}
 
