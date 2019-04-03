@@ -24,5 +24,10 @@ public class PropertiesManager {
 
 	public static String getCarStayTime() {
 		return rb.getString("car.time.stay");
+
+	}
+
+	public static String getGateNumber() {
+		return rb.getString("gate");
 	}
 }

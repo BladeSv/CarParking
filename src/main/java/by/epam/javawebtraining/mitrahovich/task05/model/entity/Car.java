@@ -1,6 +1,8 @@
 package by.epam.javawebtraining.mitrahovich.task05.model.entity;
 
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 
 import org.apache.log4j.Logger;
 
@@ -10,7 +12,7 @@ public class Car implements Runnable {
 	private long stay;
 	private long wait;
 	private CarParking carParking;
-
+	private Lock carParkingLock;
 	private static Logger log;
 
 	static {
@@ -26,7 +28,23 @@ public class Car implements Runnable {
 		this.carParking = carParking;
 		this.wait = wait;
 		this.stay = stay;
+		carParkingLock = new ReentrantLock();
+	}
 
+	public long getStay() {
+		return stay;
+	}
+
+	public void setStay(long stay) {
+		this.stay = stay;
+	}
+
+	public long getWait() {
+		return wait;
+	}
+
+	public void setWait(long wait) {
+		this.wait = wait;
 	}
 
 	public String getName() {
@@ -45,33 +63,63 @@ public class Car implements Runnable {
 		this.thread = thread;
 	}
 
+	// private boolean tryParking(CarParking currentCarParking) {
+	//
+	// boolean check = false;
+	// final long deadline = System.nanoTime() +
+	// TimeUnit.MICROSECONDS.toNanos(stay);
+	// while (deadline - System.nanoTime() > 0 && (!check)) {
+	// check = currentCarParking.driveInto(this);
+	//
+	// }
+	// return check;
+	// }
+
 	public void run() {
 		log.trace("car " + name + " stay in queue");
+		// carParking.driveInto(this, stay, TimeUnit.MILLISECONDS);
+
 		try {
-			boolean cheak = carParking.getDriveIntoLock().tryLock(stay, TimeUnit.MILLISECONDS);
-			log.trace("car " + name + " trylock into LOCK car parking -result-" + cheak);
-			if (cheak) {
-				log.trace("car " + name + " start parking");
+
+			// log.trace("car " + name + " trylock into LOCK car parking -result-" + cheak);
+			if (carParkingLock.tryLock(stay, TimeUnit.MILLISECONDS)) {
 				carParking.driveInto(this);
+				carParkingLock.unlock();
 
-				/*
-				 * log.trace("car" + name + " wait into parking place waiting " + wait +
-				 * "mSec"); try { TimeUnit.MILLISECONDS.sleep(wait);
-				 * 
-				 * } catch (InterruptedException e) { log.trace("car " + name + "cant sleep" +
-				 * e.getStackTrace()); e.printStackTrace(); }
-				 */
-//				if (!carParking.getDriveOutLock().tryLock()) {
-//
-//					carParking.driveOut(this);
-//					log.trace("car " + name + " leave car parking");
-//				}
+				log.trace("car " + name + " START sleep");
+				TimeUnit.MILLISECONDS.sleep(wait);
+				log.trace("car " + name + " STOP sleep");
 
-			} else {
+				while (!carParking.changeRandomParkingPlace(this)) {
+				}
+
+				while (!carParking.driveOut(this)) {
+
+				}
+
+				log.trace("car " + name + " leave car parking");
+			}
+			// slog.trace("car " + name + " start parking");
+
+			/*
+			 * log.trace("car" + name + " wait into parking place waiting " + wait +
+			 * "mSec"); try { TimeUnit.MILLISECONDS.sleep(wait);
+			 * 
+			 * } catch (InterruptedException e) { log.trace("car " + name + "cant sleep" +
+			 * e.getStackTrace()); e.printStackTrace(); }
+			 */
+			// if (!carParking.getDriveOutLock().tryLock()) {
+			//
+
+			// }
+
+			else {
 
 				log.trace("car " + name + " leave queue");
 			}
-		} catch (InterruptedException e) {
+		} catch (
+
+		InterruptedException e) {
 			log.trace("car " + name + " cant parking" + e.getStackTrace());
 
 		}
