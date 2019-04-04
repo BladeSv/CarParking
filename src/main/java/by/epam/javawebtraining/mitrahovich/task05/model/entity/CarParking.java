@@ -3,7 +3,7 @@ package by.epam.javawebtraining.mitrahovich.task05.model.entity;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
-import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
@@ -13,13 +13,10 @@ import org.apache.log4j.Logger;
 import by.epam.javawebtraining.mitrahovich.task05.util.PropertiesManager;
 
 public class CarParking {
-
-	// private Map<Gate, AtomicBoolean> gates;
-	// private List<Gate> gates;
-	private final int numberParkingGate;
-	private Lock carParkingLock;
-	private Lock carParkingPlaceLock;
 	private static Logger log;
+
+	private Lock carParkingLock;
+	private String name;
 
 	private final int carParkingSize;
 
@@ -27,32 +24,22 @@ public class CarParking {
 
 	private List<ParkingPlace> places;
 
-	private ConcurrentLinkedQueue<Car> outQueue;
-
 	static {
 		log = Logger.getRootLogger();
 	}
 
-	public CarParking() {
-
+	public CarParking(String name) {
+		this.name = name;
 		carParkingSize = Integer.parseInt(PropertiesManager.getCarParkingSize());
-
-		numberParkingGate = Integer.parseInt(PropertiesManager.getGateNumber());
 
 		numberFreeplace = new AtomicInteger(carParkingSize);
 
 		carParkingLock = new ReentrantLock();
-		carParkingPlaceLock = new ReentrantLock();
+
 		places = new ArrayList<ParkingPlace>(carParkingSize);
 		for (int i = 1; i <= carParkingSize; i++) {
 			places.add(new ParkingPlace(i));
 		}
-		// gates = new ConcurrentHashMap<CarParking.Gate, AtomicBoolean>();
-		// for (int i = 1; i <= numberParkingGate; i++) {
-		// CarParking.Gate temp = new Gate("gate-" + i);
-		//
-		// gates.put(temp, new AtomicBoolean(true));
-		// }outQueue=new ConcurrentLinkedQueue();
 
 		log.trace("create car parking");
 
@@ -62,120 +49,50 @@ public class CarParking {
 		return places;
 	}
 
-	// public Gate findFreeGate(Long time, TimeUnit unit) {
-	//
-	// try {
-	// if (findGateLock.tryLock(time, unit)) {
-	// for (Gate gate : gates.keySet()) {
-	// if (gates.get(gate).get()) {
-	// gates.get(gate).set(false);
-	// findGateLock.unlock();
-	// return gate;
-	//
-	// }
-	// }
-	// }
-	//
-	// } catch (InterruptedException e) {
-	// log.trace("InterruptedException " + e.getStackTrace());
-	//
-	// }
-	// return null;
-	// }
+	public boolean driveInto(Car car, Long stay, TimeUnit unit) {
+		try {
+			log.trace("ENTER in driveInto-LOCK");
+			if (carParkingLock.tryLock(stay, unit)) {
+				if (isFreePlace()) {
+					ParkingPlace temp = findFreeParkingPlace();
+					if (temp != null) {
+						temp.park(car);
 
-	public void driveInto(Car car) {
-		if (isFreePlace()) {
-			ParkingPlace temp = findFreeParkingPlace();
-			while (temp != null && (!temp.park(car))) {
-				temp = findFreeParkingPlace();
+						numberFreeplace.getAndDecrement();
+
+						return true;
+					}
+
+				}
+
 			}
-			numberFreeplace.getAndDecrement();
+		} catch (InterruptedException e) {
+
+			e.printStackTrace();
+		} finally {
+			log.trace("driveInto-UNLOCK");
+			carParkingLock.unlock();
+
 		}
+		return false;
 
 	}
-
-	// public boolean driveInto(Car car, Long time, TimeUnit unit) {
-	//
-	//
-	// if (isFreePlace()) {
-	// ParkingPlace tempPlace=findCarParkingPlace(Car car);
-	//
-	// }}}}}catch(InterruptedException e)
-	// {
-	// log.trace("InterruptedException " + e.getStackTrace());
-	// e.printStackTrace();
-	//
-	// }finally
-	// {
-	//
-	// if (tempGate != null) {
-	// carParkingLock.unlock();
-	// tempGate.driveIntoGate(car);
-	// ParkingPlace temp = findFreeParkingPlace();
-	// if (temp != null) {
-	// temp.park(car);
-	// } else {
-	// return false;
-	// }
-	//
-	// return true;
-	// }
-	//
-	// }return false;
-	// }
-
-	// if (!check) {
-	// gates.get(lock).driveIntoGate(car);
-	// check = true;
-	// ParkingPlace temp = findFreeParkingPlace();
-	//
-	// if (temp.getParkingPlaceLock().tryLock()) {
-	// // log.trace("car-" + car + " stay into car parking");
-	// temp.park(car);
-	// }
-	// }
-
-	// log.trace("driveIntoLock-LOCK");
-	// driveIntoLock.lock();
-	//
-	// if (isFreePlace()) {
-	// ParkingPlace temp = findFreeParkingPlace();
-	// log.trace("find free car place N-" + temp.getNumberPlace() + " for car-" +
-	// car);
-	// if (temp.getParkingPlaceLock().tryLock()) {
-	// temp.park(car);
-	//
-	// numberFreeplace.getAndDecrement();
-	// if (numberFreeplace.get() != 0) {
-	// log.trace("driveIntoLock-UNLOCK");
-	// driveIntoLock.unlock();
-	//
-	// } else if (numberFreeplace.get() < carParkingSize) {
-	// log.trace("driveOutLock-UNLOCK");
-	// driveIntoLock.unlock();
-	// }
-	// log.trace("car-" + car + " stay into car parking");
-	//
-	// }
-	//
-	// }
 
 	public boolean driveOut(Car car) {
 		if (carParkingLock.tryLock()) {
 			log.trace("ENTER in driveOut");
 			ParkingPlace temp = findCarParkingPlace(car);
 
-			while (temp != null && (!temp.leave())) {
+			while (temp != null && (!temp.leave()))
+				;
 
-			}
 			log.trace("Car-" + car + "LEAVE parking place");
 			numberFreeplace.getAndIncrement();
 			carParkingLock.unlock();
 			return true;
-		} else {
-
-			return false;
 		}
+
+		return false;
 
 	}
 
@@ -197,8 +114,7 @@ public class CarParking {
 					}
 					tempPlace.park(tempRandomCar);
 					tempRandomPlace.park(car);
-					log.trace("change car-" + car + " from parking place-" + tempPlace.getNumberPlace() + " with car"
-							+ tempRandomCar + "from parking place-" + tempRandomPlace.getNumberPlace());
+					log.trace("change car-" + car + " from parking place-" + tempPlace.getNumberPlace() + " with car" + tempRandomCar + "from parking place-" + tempRandomPlace.getNumberPlace());
 					carParkingLock.unlock();
 					return true;
 				} else {
@@ -221,20 +137,6 @@ public class CarParking {
 		}
 	}
 
-	// private void putInOutQueue(Car car) {
-	// outQueue.add(car);
-	// while (!outQueue.isEmpty()) {
-	// for (Lock lock : gates.keySet()) {
-	// if (lock.tryLock()) {
-	// gates.get(lock).driveOutGate(outQueue.poll());
-	//
-	// }
-	// }
-	//
-	// }
-	//
-	// }
-
 	private boolean isFreePlace() {
 		return numberFreeplace.get() > 0;
 	}
@@ -245,10 +147,11 @@ public class CarParking {
 		for (ParkingPlace p : places) {
 			if (p.isEmpty()) {
 				parkingPlace = p;
-				log.trace("FIND parking place-" + parkingPlace.getNumberPlace());
+
 			}
 
 		}
+		log.trace("FIND parking place-" + parkingPlace.getNumberPlace());
 		return parkingPlace;
 	}
 

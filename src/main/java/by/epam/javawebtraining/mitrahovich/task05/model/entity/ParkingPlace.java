@@ -43,39 +43,46 @@ public class ParkingPlace {
 	public boolean park(Car car) {
 
 		if (parkingPlaceLock.tryLock()) {
+			try {
+				log.trace("park parking place " + numberPlace + " LOCK car " + car);
+				if (isEmpty()) {
 
-			log.trace("park parking place " + numberPlace + " LOCK car " + car);
-			if (isEmpty()) {
+					this.car = car;
+					log.trace("car " + car + " park into parking place number " + numberPlace);
 
-				this.car = car;
-				log.trace("car " + car + " park into parking place number " + numberPlace);
+				}
+				log.trace("park parking place " + numberPlace + " UNLOCK car " + car);
 
+				return true;
+
+			} finally {
+				parkingPlaceLock.unlock();
 			}
-			log.trace("park parking place " + numberPlace + " UNLOCK car " + car);
-			parkingPlaceLock.unlock();
-			return true;
 
-		} else {
-			log.trace("CANT car " + car + " park into parking place number " + numberPlace);
-			return false;
 		}
+		log.trace("CANT car " + car + " park into parking place number " + numberPlace);
+		return false;
 
 	}
 
 	public boolean leave() {
-		log.trace("leave parking place " + numberPlace + " LOCK car " + car);
+
 		if (parkingPlaceLock.tryLock()) {
+			log.trace("leave parking place " + numberPlace + " LOCK car " + car);
+			try {
 
-			log.trace("car " + car + " leave parking place number " + numberPlace);
-			car = null;
-			log.trace("leave parking place " + numberPlace + " UNLOCK car ");
-			parkingPlaceLock.unlock();
-			return true;
+				log.trace("car " + car + " leave parking place number " + numberPlace);
+				car = null;
+				log.trace("leave parking place " + numberPlace + " UNLOCK car ");
 
-		} else {
-			log.trace("CANT car " + car + " leave parking place number " + numberPlace);
-			return false;
+				return true;
+
+			} finally {
+				parkingPlaceLock.unlock();
+			}
 		}
+		log.trace("CANT car " + car + " leave parking place number " + numberPlace);
+		return false;
 
 	}
 

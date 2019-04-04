@@ -3,7 +3,7 @@ package by.epam.javawebtraining.mitrahovich.task05.controller;
 import java.util.Random;
 
 import by.epam.javawebtraining.mitrahovich.task05.model.entity.Car;
-import by.epam.javawebtraining.mitrahovich.task05.model.entity.CarParking;
+import by.epam.javawebtraining.mitrahovich.task05.model.entity.ParkingList;
 import by.epam.javawebtraining.mitrahovich.task05.util.PropertiesManager;
 
 public class Controller {
@@ -14,22 +14,16 @@ public class Controller {
 	}
 
 	public void run() {
-		CarParking carParking = new CarParking();
-		for (int i = 1; i < 40; i++) {
+		// CarParking carParking = new CarParking();
+		ParkingList carParkingList = new ParkingList();
+
+		for (int i = 1; i <= Integer.parseInt(PropertiesManager.getCarsNumber()); i++) {
 			try {
-				new Car("Super car" + i, carParking, rd.nextInt(Integer.parseInt(PropertiesManager.getCarWaitTime())),
-						10000000L).getThread().join();
+				new Car("Super car" + i, carParkingList.getParkingList(), 3000, 2000);
 			} catch (NumberFormatException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			} catch (InterruptedException e) {
-				// TODO Auto-generated catch block
+
 				e.printStackTrace();
 			}
-
-			// new Car("Super car" + i, carParking,
-			// rd.nextInt(Integer.parseInt(PropertiesManager.getCarWaitTime())),
-			// rd.nextInt(Integer.parseInt(PropertiesManager.getCarStayTime())));
 
 		}
 

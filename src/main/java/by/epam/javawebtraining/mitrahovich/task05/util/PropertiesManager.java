@@ -30,4 +30,12 @@ public class PropertiesManager {
 	public static String getGateNumber() {
 		return rb.getString("gate");
 	}
+
+	public static String getCarsNumber() {
+		return rb.getString("cars");
+	}
+
+	public static String getCarParkingNumber() {
+		return rb.getString("parking");
+	}
 }
