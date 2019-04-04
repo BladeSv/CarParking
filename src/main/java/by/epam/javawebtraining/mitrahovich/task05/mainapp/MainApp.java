@@ -12,7 +12,12 @@ public class MainApp {
 
 		Controller controller = new Controller();
 		controller.run();
-		// Thread.currentThread().join();
+		try {
+			Thread.currentThread().join();
+		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 
 	}
 

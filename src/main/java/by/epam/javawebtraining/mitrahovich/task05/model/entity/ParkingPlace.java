@@ -44,23 +44,22 @@ public class ParkingPlace {
 
 		if (parkingPlaceLock.tryLock()) {
 			try {
-				log.trace("park parking place " + numberPlace + " LOCK car " + car);
+				log.trace("[Parking place]-" + numberPlace + "-[Car]-" + car.getName() + "-[Park]-[LOCK]");
 				if (isEmpty()) {
 
 					this.car = car;
-					log.trace("car " + car + " park into parking place number " + numberPlace);
+					log.debug("[Parking place]-" + numberPlace + "-[Car]-" + car.getName() + "-[Park]-[FRUE]");
 
+					return true;
 				}
-				log.trace("park parking place " + numberPlace + " UNLOCK car " + car);
-
-				return true;
 
 			} finally {
+				log.trace("[Parking place]-" + numberPlace + "-[Car]-" + car.getName() + "-[Park]-[UNLOCK]");
 				parkingPlaceLock.unlock();
 			}
 
 		}
-		log.trace("CANT car " + car + " park into parking place number " + numberPlace);
+		log.debug("[Parking place]-" + numberPlace + "-[Car]-" + car.getName() + "-[Park]-[FALSE]");
 		return false;
 
 	}
@@ -68,20 +67,23 @@ public class ParkingPlace {
 	public boolean leave() {
 
 		if (parkingPlaceLock.tryLock()) {
-			log.trace("leave parking place " + numberPlace + " LOCK car " + car);
-			try {
 
-				log.trace("car " + car + " leave parking place number " + numberPlace);
-				car = null;
+			try {
+				log.trace("[Parking place]-" + numberPlace + "-[Car]-" + car.getName() + "-[Leave]-[LOCK]");
+				if (car != null) {
+					car = null;
+					log.debug("[Parking place]-" + numberPlace + "-[Car]-" + car.getName() + "-[Leave]-[TRUE]");
+					return true;
+				}
+
 				log.trace("leave parking place " + numberPlace + " UNLOCK car ");
 
-				return true;
-
 			} finally {
+				log.trace("[Parking place]-" + numberPlace + "-[Car]-" + car.getName() + "-[Leave]-[UNLOCK]");
 				parkingPlaceLock.unlock();
 			}
 		}
-		log.trace("CANT car " + car + " leave parking place number " + numberPlace);
+		log.debug("[Parking place]-" + numberPlace + "-[Car]-" + car.getName() + "-[Leave]-[FALSE]");
 		return false;
 
 	}
@@ -121,7 +123,7 @@ public class ParkingPlace {
 
 	@Override
 	public String toString() {
-		return "Car: " + car + ", stay in parking place number: " + numberPlace;
+		return "Car: " + car.getName() + ", stay in parking place number: " + numberPlace;
 	}
 
 }

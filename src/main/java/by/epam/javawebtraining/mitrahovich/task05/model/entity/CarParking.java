@@ -45,20 +45,22 @@ public class CarParking {
 
 	}
 
-	public List<ParkingPlace> getPlace() {
-		return places;
+	public String getName() {
+		return name;
 	}
 
 	public boolean driveInto(Car car, Long stay, TimeUnit unit) {
 		try {
-			log.trace("ENTER in driveInto-LOCK");
+
 			if (carParkingLock.tryLock(stay, unit)) {
+				log.trace("[Parking]-" + name + "-[Car]-" + car.getName() + "-[Into]-[LOCK]");
 				if (isFreePlace()) {
 					ParkingPlace temp = findFreeParkingPlace();
 					if (temp != null) {
 						temp.park(car);
 
 						numberFreeplace.getAndDecrement();
+						log.debug("[Parking]-" + name + "-[Car]-" + car.getName() + "-[Into]-[TRUE]");
 
 						return true;
 					}
@@ -66,32 +68,40 @@ public class CarParking {
 				}
 
 			}
-		} catch (InterruptedException e) {
 
-			e.printStackTrace();
+		} catch (InterruptedException e) {
+			log.trace("driveInto-UNLOCK exception-" + e.getStackTrace());
+
 		} finally {
-			log.trace("driveInto-UNLOCK");
+			log.trace("[Parking]-" + name + "-[Car]-" + car.getName() + "-[Into]-[UNLOCK]");
+
 			carParkingLock.unlock();
 
 		}
+		log.debug("[Parking]-" + name + "-[Car]-" + car.getName() + "-[Into]-[FALSE]");
 		return false;
-
 	}
 
 	public boolean driveOut(Car car) {
-		if (carParkingLock.tryLock()) {
-			log.trace("ENTER in driveOut");
+		// if (carParkingLock.tryLock()) {
+		carParkingLock.lock();
+		try {
+			log.trace("[Parking]-" + name + "-[Car]-" + car.getName() + "-[Out]-[LOCK]");
 			ParkingPlace temp = findCarParkingPlace(car);
+			if (temp != null) {
 
-			while (temp != null && (!temp.leave()))
-				;
+				temp.leave();
+				numberFreeplace.getAndIncrement();
+				log.debug("[Parking]-" + name + "-[Car]-" + car.getName() + "-[Out]-[FRUE]");
+				return true;
+			}
 
-			log.trace("Car-" + car + "LEAVE parking place");
-			numberFreeplace.getAndIncrement();
+		} finally {
+			log.trace("[Parking]-" + name + "-[Car]-" + car.getName() + "-[Out]-[UNLOCK]");
 			carParkingLock.unlock();
-			return true;
 		}
 
+		// }log.debug("[Parking]-"+name+"-[Car]-"+car.getName()+"-[Out]-[FALSE]");
 		return false;
 
 	}
@@ -114,7 +124,8 @@ public class CarParking {
 					}
 					tempPlace.park(tempRandomCar);
 					tempRandomPlace.park(car);
-					log.trace("change car-" + car + " from parking place-" + tempPlace.getNumberPlace() + " with car" + tempRandomCar + "from parking place-" + tempRandomPlace.getNumberPlace());
+					log.trace("change car-" + car + " from parking place-" + tempPlace.getNumberPlace() + " with car"
+							+ tempRandomCar + "from parking place-" + tempRandomPlace.getNumberPlace());
 					carParkingLock.unlock();
 					return true;
 				} else {
@@ -142,7 +153,7 @@ public class CarParking {
 	}
 
 	private ParkingPlace findFreeParkingPlace() {
-		log.trace("Try find free parking place");
+
 		ParkingPlace parkingPlace = null;
 		for (ParkingPlace p : places) {
 			if (p.isEmpty()) {
@@ -151,7 +162,8 @@ public class CarParking {
 			}
 
 		}
-		log.trace("FIND parking place-" + parkingPlace.getNumberPlace());
+		log.trace("[Parking]-" + name + "-[Find]-[FREE]-[Parking place]-" + parkingPlace.getNumberPlace());
+
 		return parkingPlace;
 	}
 
@@ -161,10 +173,14 @@ public class CarParking {
 		for (ParkingPlace p : places) {
 			if (p.getCar() == car) {
 				parkingPlace = p;
-				log.trace("FIND parking place-" + parkingPlace.getNumberPlace() + "with car-" + parkingPlace.getCar());
+				log.debug("[Parking]-" + name + "-[Car]-" + car.getName() + "-[Find]-[Parking place]-"
+						+ parkingPlace != null ? parkingPlace.getNumberPlace() : null);
 			}
 
 		}
+		log.debug("[Parking]-" + name + "-[Car]-" + car.getName() + "-[Find]-[Parking place]-" + parkingPlace != null
+				? parkingPlace.getNumberPlace()
+				: null);
 		return parkingPlace;
 
 	}
