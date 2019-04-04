@@ -3,8 +3,6 @@ package by.epam.javawebtraining.mitrahovich.task05.model.entity;
 import java.util.List;
 import java.util.Random;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReentrantLock;
 
 import org.apache.log4j.Logger;
 
@@ -17,7 +15,7 @@ public class Car implements Runnable {
 	private long stay;
 	private long wait;
 	private List<CarParking> carParkingList;
-	private Lock carParkingLock;
+
 	private Thread thread;
 
 	static {
@@ -29,7 +27,8 @@ public class Car implements Runnable {
 
 		// log.trace("create car" + name + " wait time-" + wait + " stay time-" + stay);
 
-		log.debug("[Car]-" + name + "-[CREAT]-[Stay]-" + stay + "-[Wait]-" + wait);
+		log.debug("[Car]-" + name + "-[CREAT]-[Stay]-" + stay + "-[Wait]-" + wait + " [PARKING LIST SIZE]-"
+				+ carParkingList.size());
 
 		thread = new Thread(this);
 		thread.start();
@@ -37,7 +36,7 @@ public class Car implements Runnable {
 		this.carParkingList = carParkingList;
 		this.wait = wait;
 		this.stay = stay;
-		carParkingLock = new ReentrantLock();
+
 	}
 
 	public long getStay() {
@@ -90,14 +89,14 @@ public class Car implements Runnable {
 
 					// carParkingList.get(0).changeRandomParkingPlace(this);
 
-					carParkingList.get(0).driveOut(this);
+					tempCarParking.driveOut(this);
 
 					log.trace("car " + name + " leave car parking");
 					check = true;
 				}
 
 				else {
-					log.debug("[Car]-" + name + "-[Leave]-[QUEUE]-[Parking]-" + tempCarParking.getName());
+					log.debug("!!!!!!!!!![Car]-" + name + "-[Leave]-[QUEUE]-[Parking]-" + tempCarParking.getName());
 					check = true;
 
 				}

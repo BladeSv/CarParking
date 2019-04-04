@@ -12,8 +12,9 @@ public class ParkingList {
 		super();
 		parkingList = new ArrayList<CarParking>();
 
-		for (int i = 1; i <= Integer.parseInt(PropertiesManager.getCarParkingSize()); i++) {
+		for (int i = 1; i <= Integer.parseInt(PropertiesManager.getCarParkingNumber()); i++) {
 			parkingList.add(new CarParking("CarParking-" + i));
+
 		}
 	}
 

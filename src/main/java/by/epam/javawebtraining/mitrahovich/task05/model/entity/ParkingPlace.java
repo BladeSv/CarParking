@@ -67,19 +67,17 @@ public class ParkingPlace {
 	public boolean leave() {
 
 		if (parkingPlaceLock.tryLock()) {
-
+			parkingPlaceLock.lock();
 			try {
 				log.trace("[Parking place]-" + numberPlace + "-[Car]-" + car.getName() + "-[Leave]-[LOCK]");
 				if (car != null) {
 					car = null;
-					log.debug("[Parking place]-" + numberPlace + "-[Car]-" + car.getName() + "-[Leave]-[TRUE]");
+					log.debug("[Parking place]-" + numberPlace + "-[Car]-[Leave]-[TRUE]");
 					return true;
 				}
 
-				log.trace("leave parking place " + numberPlace + " UNLOCK car ");
-
 			} finally {
-				log.trace("[Parking place]-" + numberPlace + "-[Car]-" + car.getName() + "-[Leave]-[UNLOCK]");
+				log.trace("[Parking place]-" + numberPlace + "-[Car]-[Leave]-[UNLOCK]");
 				parkingPlaceLock.unlock();
 			}
 		}
