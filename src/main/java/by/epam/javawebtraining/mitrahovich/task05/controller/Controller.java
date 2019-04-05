@@ -19,11 +19,16 @@ public class Controller {
 
 		for (int i = 1; i <= Integer.parseInt(PropertiesManager.getCarsNumber()); i++) {
 			try {
-				new Car("Super car" + i, carParkingList.getParkingList(), 3000, 2000);
+				new Car("!CAR-" + i, carParkingList.getParkingList(), 5, 2000);
+				// TimeUnit.MICROSECONDS.sleep(1000);
 			} catch (NumberFormatException e) {
 
 				e.printStackTrace();
 			}
+			// catch (InterruptedException e) {
+			// // TODO Auto-generated catch block
+			// e.printStackTrace();
+			// }
 
 		}
 

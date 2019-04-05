@@ -41,17 +41,15 @@ public class ParkingPlace {
 	}
 
 	public boolean park(Car car) {
-
-		if (parkingPlaceLock.tryLock()) {
+		log.trace("[Parking place]-" + numberPlace + "-[Car]-" + car.getName() + "-[Park]-[TRYLOCK]");
+		if (parkingPlaceLock.tryLock() && isEmpty()) {
 			try {
 				log.trace("[Parking place]-" + numberPlace + "-[Car]-" + car.getName() + "-[Park]-[LOCK]");
-				if (isEmpty()) {
 
-					this.car = car;
-					log.debug("[Parking place]-" + numberPlace + "-[Car]-" + car.getName() + "-[Park]-[FRUE]");
+				this.car = car;
+				log.debug("[Parking place]-" + numberPlace + "-[Car]-" + car.getName() + "-[Park]-[FRUE]");
 
-					return true;
-				}
+				return true;
 
 			} finally {
 				log.trace("[Parking place]-" + numberPlace + "-[Car]-" + car.getName() + "-[Park]-[UNLOCK]");
@@ -66,21 +64,21 @@ public class ParkingPlace {
 
 	public boolean leave() {
 
-		if (parkingPlaceLock.tryLock()) {
-			parkingPlaceLock.lock();
-			try {
-				log.trace("[Parking place]-" + numberPlace + "-[Car]-" + car.getName() + "-[Leave]-[LOCK]");
-				if (car != null) {
-					car = null;
-					log.debug("[Parking place]-" + numberPlace + "-[Car]-[Leave]-[TRUE]");
-					return true;
-				}
+		parkingPlaceLock.lock();
 
-			} finally {
-				log.trace("[Parking place]-" + numberPlace + "-[Car]-[Leave]-[UNLOCK]");
-				parkingPlaceLock.unlock();
+		try {
+			log.trace("[Parking place]-" + numberPlace + "-[Car]-" + car.getName() + "-[Leave]-[LOCK]");
+			if (!isEmpty()) {
+				this.car = null;
+				log.debug("[Parking place]-" + numberPlace + "-[Car]-[Leave]-[TRUE]");
+				return true;
 			}
+
+		} finally {
+			log.trace("[Parking place]-" + numberPlace + "-[Car]-[Leave]-[UNLOCK]");
+			parkingPlaceLock.unlock();
 		}
+
 		log.debug("[Parking place]-" + numberPlace + "-[Car]-" + car.getName() + "-[Leave]-[FALSE]");
 		return false;
 
@@ -88,7 +86,7 @@ public class ParkingPlace {
 
 	public boolean isEmpty() {
 
-		return car == null;
+		return this.car == null;
 	}
 
 	@Override

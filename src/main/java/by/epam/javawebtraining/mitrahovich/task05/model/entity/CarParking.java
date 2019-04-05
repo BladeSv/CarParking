@@ -1,6 +1,7 @@
 package by.epam.javawebtraining.mitrahovich.task05.model.entity;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Random;
 import java.util.concurrent.TimeUnit;
@@ -36,7 +37,7 @@ public class CarParking {
 
 		carParkingLock = new ReentrantLock();
 
-		places = new ArrayList<ParkingPlace>(carParkingSize);
+		places = Collections.synchronizedList(new ArrayList<ParkingPlace>(carParkingSize));
 		for (int i = 1; i <= carParkingSize; i++) {
 			places.add(new ParkingPlace(i));
 		}
@@ -50,21 +51,21 @@ public class CarParking {
 	}
 
 	public boolean driveInto(Car car, Long stay, TimeUnit unit) {
+
+		log.trace("[Parking]-" + name + "-[Car]-" + car.getName() + "-[Into]-[TRYLOCK]");
 		try {
+			if (carParkingLock.tryLock(stay, unit) && (isFreePlace())) {
 
-			if (carParkingLock.tryLock(stay, unit)) {
 				log.trace("[Parking]-" + name + "-[Car]-" + car.getName() + "-[Into]-[LOCK]");
-				if (isFreePlace()) {
-					ParkingPlace temp = findFreeParkingPlace();
-					if (temp != null) {
-						temp.park(car);
 
-						numberFreeplace.getAndDecrement();
-						log.debug("[Parking]-" + name + "-[Car]-" + car.getName() + "-[Into]-[TRUE]");
+				ParkingPlace temp = findFreeParkingPlace();
+				if (temp != null) {
+					temp.park(car);
 
-						return true;
-					}
+					numberFreeplace.getAndDecrement();
+					log.debug("[Parking]-" + name + "-[Car]-" + car.getName() + "-[Into]-[TRUE]");
 
+					return true;
 				}
 
 			}
@@ -83,33 +84,35 @@ public class CarParking {
 	}
 
 	public boolean driveOut(Car car) {
-		if (carParkingLock.tryLock()) {
-			carParkingLock.lock();
-			try {
-				log.trace("[Parking]-" + name + "-[Car]-" + car.getName() + "-[Out]-[LOCK]");
-				ParkingPlace temp = findCarParkingPlace(car);
-				if (temp != null) {
+		log.trace("[Parking]-" + name + "-[Car]-" + car.getName() + "-[Out]-[TRYLOCK]");
 
-					temp.leave();
-					numberFreeplace.getAndIncrement();
-					log.debug("[Parking]-" + name + "-[Car]-" + car.getName() + "-[Out]-[FRUE]");
-					return true;
-				}
+		carParkingLock.lock();
+		try {
+			log.trace("[Parking]-" + name + "-[Car]-" + car.getName() + "-[Out]-[LOCK]");
+			ParkingPlace temp = findCarParkingPlace(car);
+			if (temp != null) {
 
-			} finally {
-				log.trace("[Parking]-" + name + "-[Car]-" + car.getName() + "-[Out]-[UNLOCK]");
-				carParkingLock.unlock();
+				temp.leave();
+				numberFreeplace.getAndIncrement();
+				log.debug("[Parking]-" + name + "-[Car]-" + car.getName() + "-[Out]-[FRUE]");
+				return true;
 			}
 
+		} finally {
+			log.trace("[Parking]-" + name + "-[Car]-" + car.getName() + "-[Out]-[UNLOCK]");
+			carParkingLock.unlock();
 		}
+
 		log.debug("[Parking]-" + name + "-[Car]-" + car.getName() + "-[Out]-[FALSE]");
 		return false;
 
 	}
 
 	public boolean changeRandomParkingPlace(Car car) {
+		log.debug("[Parking]-" + name + "-[Car]-" + car.getName() + "-[CHANGE]-[LOCK]");
 		if (carParkingLock.tryLock()) {
-			log.trace("CHANGE start change parking place car-" + car);
+			log.debug("[Parking]-" + name + "-[Car]-" + car.getName() + "-[CHANGE]-[LOCK]");
+
 			ParkingPlace tempPlace = findCarParkingPlace(car);
 
 			ParkingPlace tempRandomPlace = places.get(new Random().nextInt(places.size()));

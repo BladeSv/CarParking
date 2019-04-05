@@ -25,8 +25,6 @@ public class Car implements Runnable {
 
 	public Car(String name, List<CarParking> carParkingList, long wait, long stay) {
 
-		// log.trace("create car" + name + " wait time-" + wait + " stay time-" + stay);
-
 		log.debug("[Car]-" + name + "-[CREAT]-[Stay]-" + stay + "-[Wait]-" + wait + " [PARKING LIST SIZE]-"
 				+ carParkingList.size());
 
@@ -72,20 +70,20 @@ public class Car implements Runnable {
 	}
 
 	public void run() {
-		// log.trace("car " + name + " stay in queue");
+
 		boolean check = false;
 		while (!check) {
 
 			try {
 				CarParking tempCarParking = carParkingList.get(rd.nextInt(carParkingList.size()));
-				log.debug("[Car]-" + name + "-[STAY]-[QUEUE]-[Parking]-" + tempCarParking.getName());
-				check = tempCarParking.driveInto(this, stay, TimeUnit.MILLISECONDS);
-				if (check) {
+				log.debug("[Car]-" + name + "-[STAY]-stay-[QUEUE]-[Parking]-" + tempCarParking.getName());
+				// check = ;
+				if (tempCarParking.driveInto(this, stay, TimeUnit.MILLISECONDS)) {
 
 					log.trace("car " + name + " START sleep");
 					TimeUnit.MILLISECONDS.sleep(wait);
 
-					log.debug("[Car]-" + name + "-[STOP]-[SLEEP]-[Parking]-" + tempCarParking.getName());
+					log.debug("[Car]-" + name + "-[!!!!!!SLEEP]-[STOP]-[Parking]-" + tempCarParking.getName());
 
 					// carParkingList.get(0).changeRandomParkingPlace(this);
 
